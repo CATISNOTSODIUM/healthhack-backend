@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Pauses struct {
     ID        uint      `gorm:"primaryKey;autoIncrement" json:"id"`

@@ -28,6 +28,10 @@ func InitDB() *gorm.DB {
 
 	if err := db.AutoMigrate(
 		&models.User{},
+		&models.History{},
+		&models.TextAnalysis{},
+		&models.VoiceActivityAnalysis{},
+		&models.Pauses{},
 	); err != nil {
 		log.Fatalf("Error migrating database: %v", err)
 	}

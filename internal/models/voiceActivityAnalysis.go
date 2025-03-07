@@ -9,4 +9,6 @@ type VoiceActivityAnalysis struct {
 	PausesDuration float32 `gorm:"not null" json:"pauses_duration"`
 	NumberOfPauses uint `gorm:"not null" json:"number_of_pauses"`
 	AnswerDelay float32 `gorm:"not null" json:"answer_delay"`
+	// Detailed number of pauses
+	Pauses []Pauses `json:"pauses"`
 }

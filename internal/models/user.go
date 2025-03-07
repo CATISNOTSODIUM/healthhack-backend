@@ -14,6 +14,9 @@ type User struct {
 	// To be fixed
 	MedicalRecord string `gorm:"default:null" json:"medical_record"`
 
+	// Analysis histories
+	Histories []History `json:"histories"`
+
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt time.Time
