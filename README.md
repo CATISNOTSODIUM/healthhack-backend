@@ -1,7 +1,7 @@
 # Backend for healthhack 
 ## Todo list
 - [ ] Set up database for users
-- [ ] Google authentication
+- [ ] User queries, mutation, Google authentication
 ### Issues
 - **Cannot connect to database:** Make sure not to use School Wifi to connect to database. You can use VPN to bypass though.
 ## Set up
