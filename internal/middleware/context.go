@@ -6,7 +6,7 @@ import (
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 )
 
-// random thing idk 
+// random thing idk (I know it's not middleware)
 func UserCtx(next http.Handler) http.Handler {
   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     user := models.User {

@@ -2,10 +2,11 @@ package users
 
 import (
 	"fmt"
-	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"net/http"
+	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 )
 
+// Sample
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user, ok := ctx.Value("user").(models.User)
@@ -19,5 +20,6 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// test with openAI
 	w.Write([]byte(fmt.Sprintf("User:%s", user.Username)))
 }

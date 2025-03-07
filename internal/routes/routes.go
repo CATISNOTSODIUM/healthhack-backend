@@ -3,13 +3,14 @@ package routes
 import (
 	"net/http"
 
-	"github.com/CATISNOTSODIUM/healthhack-backend/internal/handlers/users"
+    "github.com/CATISNOTSODIUM/healthhack-backend/internal/handlers/users"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/sashabaranov/go-openai"
 	"gorm.io/gorm"
 )
 
-func GetRoutes(db *gorm.DB) func(r chi.Router) {
+func GetRoutes(db *gorm.DB, openAIClient *openai.Client) func(r chi.Router) {
     userHandler := users.NewUserHandler(db)
    
     return func(r chi.Router) {
