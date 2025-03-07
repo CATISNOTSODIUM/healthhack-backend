@@ -2,19 +2,22 @@ package databases
 
 import (
 	"log"
-	"os"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
+	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 func InitDB() *gorm.DB {
-	dsn := os.Getenv("DSN")
-	if dsn == "" {
+	dsn, ok := viper.Get("DSN").(string)
+
+	if (!ok) {
 		log.Fatalf("DSN is not set in the environment variables")
 	}
 
+	log.Println("Connect to database")
+	
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:      logger.Default.LogMode(logger.Info),
 		PrepareStmt: true,
