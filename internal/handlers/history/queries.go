@@ -1,4 +1,4 @@
-package users
+package history
 
 import (
 	"fmt"
@@ -6,8 +6,9 @@ import (
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 )
 
-// Sample
-func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+
+func (h *HistoryHandler) GetUserHistory(w http.ResponseWriter, r *http.Request) {
+	// TODO
 	ctx := r.Context()
 	user, ok := ctx.Value("user").(models.User)
 	if !ok {
@@ -20,6 +21,5 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// test with openAI
 	w.Write([]byte(fmt.Sprintf("User:%s", user.Username)))
 }

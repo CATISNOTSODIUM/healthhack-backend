@@ -2,14 +2,14 @@ package models
 
 import (
 	"time"
-	"gorm.io/gorm"
+
+	"github.com/google/uuid"
 )
 
 type History struct {
-	gorm.Model
-	ID                      uint      `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID                  uint      `gorm:"not null" json:"user_id"`
-	VoiceActivityAnalysisID uint      `gorm:"not null" json:"voice_activity_analysis_id"`
-	TextAnalysisID          uint      `gorm:"not null" json:"text_analysis_id"`
-	CreatedAt               time.Time `gorm:"autoCreateTime" json:"created_at"`
+	ID                    uuid.UUID             `gorm:"primaryKey;type:uuid;default:gen_random_uuid()" json:"id"`
+	UserID                uuid.UUID             `gorm:"not null" json:"user_id"`
+	VoiceActivityAnalysis VoiceActivityAnalysis `gorm:"default:null" json:"voice_activity_analysis"`
+	TextAnalysis          TextAnalysis          `gorm:"default:null" json:"text_analysis"`
+	CreatedAt             time.Time             `gorm:"autoCreateTime" json:"created_at"`
 }

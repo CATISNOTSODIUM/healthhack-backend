@@ -1,17 +1,18 @@
 package models
-import (
-	"time"
-	"gorm.io/gorm"
-)
+
+import "github.com/google/uuid"
+
 type VoiceActivityAnalysis struct {
-	ID   uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	ID   uuid.UUID   	`gorm:"primaryKey;type:uuid;default:gen_random_uuid()" json:"id"`
+	HistoryID uuid.UUID `gorm:"not null" json:"history_id"`
 	Duration float32 `gorm:"not null" json:"duration"`
-	SpeechDuration float32 `gorm:"not null" json:"speech_duration"`
-	PausesDuration float32 `gorm:"not null" json:"pauses_duration"`
-	NumberOfPauses uint `gorm:"not null" json:"number_of_pauses"`
-	AnswerDelay float32 `gorm:"not null" json:"answer_delay"`
-	// Detailed number of pauses
-	Pauses []Pauses `json:"pauses"`
-    DeletedAt time.Time
-	IsDeleted gorm.DeletedAt `gorm:"softDelete:flag,DeletedAtField:DeletedAt" json:"deleted_at,omitempty"`
+	TotalSpeechDuration float32 `gorm:"not null" json:"total_speech_duration"`
+	TotalPausesDuration float32 `gorm:"not null" json:"total_pauses_duration"`
+	NumSpeechSegments uint `gorm:"not null" json:"num_speech_segments"`
+	NumPauses uint `gorm:"not null" json:"num_pauses"`
+	AnswerDelayDuration float32 `gorm:"not null" json:"answer_delay_duration"`
+	
+	Pauses []Pause `gorm:"ForeignKey:VoiceActivityAnalysisID" json:"pauses"`
+	SpeechSegments []SpeechSegment `gorm:"ForeignKey:VoiceActivityAnalysisID" json:"speech_segments"`
+	// Voice file is deleted immediately after the analysis is completed.
 }
