@@ -1,12 +1,14 @@
-package users
+package history
 
 import (
 	"fmt"
-	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"net/http"
+	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 )
 
-func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+
+func (h *HistoryHandler) GetUserHistory(w http.ResponseWriter, r *http.Request) {
+	// TODO
 	ctx := r.Context()
 	user, ok := ctx.Value("user").(models.User)
 	if !ok {
