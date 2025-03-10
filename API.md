@@ -9,9 +9,10 @@
       - [Update user](#update-user)
       - [Delete user](#delete-user)
     - [History endpoint `/api/history`](#history-endpoint-apihistory)
-      - [Retrieve history](#retrieve-history)
-      - [Create history](#create-history)
+      - [Create empty history](#create-empty-history)
+      - [Retrieve latest histories from userID (Including analyzed data)](#retrieve-latest-histories-from-userid-including-analyzed-data)
     - [Voice analysis endpoint `/internal/voice-analysis`](#voice-analysis-endpoint-internalvoice-analysis)
+  - [Add/Update new voice analysis](#addupdate-new-voice-analysis)
 
 This document provides detailed information about the available API endpoints, including request methods, parameters, responses, and error codes.
 
@@ -24,15 +25,26 @@ At this stage, **I have not set up any forms of authentication** (since I'm quit
 ### User endpoints `/api/users`
 #### Get user
 * **Method**: GET
-* **URL** `/api/users/get<id:USER_ID>` 
+* **URL** `/api/users/get` 
 * **Description** Get basic information for a user with ID `USER_ID`
-* **Example Response** 
+* **Example body**
+```json
+{
+  "user_id": "USER_UUID",
+}
+```
+* **Example Response (If the user is founded)** 
 ```json
 {
   "username": "username",
   "age": 10,
   "medical_record": "A single child with personal trauma"
 }
+```
+* **Example Response (not founded)** 
+```
+record not found
+User XXX not founded
 ```
 #### Create user
 * **Method**: POST
@@ -50,20 +62,20 @@ At this stage, **I have not set up any forms of authentication** (since I'm quit
 * **Example Response** 
 ```json
 {
-  "id": USER_UUID,
+  "id": "USER_UUID",
   "username": "username",
   "age": 10,
   "medical_record": "A single child with personal trauma"
 }
 ```
 #### Update user
-* **Method**: POST
+* **Method**: PUT
 * **URL** `/api/users/update` 
 * **Description** Update user information based on user id.
 * **Example body** Note that the `id` field is required to specify the target. Any other fields provided in the body will be updated accordingly.
 ```json
 {
-  "id": USER_UUID,
+  "id": "USER_UUID",
   "username": "username",
   "age": 10,
   "medical_record": "A single child with personal trauma"
@@ -78,13 +90,13 @@ At this stage, **I have not set up any forms of authentication** (since I'm quit
 }
 ```
 #### Delete user
-* **Method**: POST
+* **Method**: PUT
 * **URL** `/api/users/delete` 
 * **Description** Delete user information based on user id.
 * **Example body** 
 ```json
 {
-  "id": USER_UUID
+  "id": "USER_UUID"
 }
 ```
 * **Example Response** 
@@ -92,21 +104,52 @@ At this stage, **I have not set up any forms of authentication** (since I'm quit
 "Successfully delete user id: USER_ID"
 ```
 ### History endpoint `/api/history`
-#### Retrieve history
-To be updated
-#### Create history
-To be updated
-
-### Voice analysis endpoint `/internal/voice-analysis`
+#### Create empty history
 **Add new voice analysis**
 * **Method**: POST
+* **URL** `/api/history/create`
+* **Description** Create new empty history.
+*  **Example body** 
+```json
+{
+  "user_id": "USER_UUID"
+}
+```
+*  **Example response** The newly created history UUID.
+```json
+{
+  "id": "HISTORY_UUID"
+}
+```
+#### Retrieve latest histories from userID (Including analyzed data)
+* **Method**: GET
+* **URL** `/api/history/get`
+* **Description** Retrieve user particular histories. You can specify the number of histories you want to retrieve.
+* **Example body**
+```json
+{
+  "user_id": "USER_UUID",
+  "number_of_histories": 1  
+}
+```
+* **Example response (some fields are truncated)**
+```json
+[{
+  "id":"1f020d38-6f1b-465c-b476-a31ae153b469",
+  "user_id":"45d7c3cc-2a10-4de8-bb3d-ec8be81164e3",
+  "voice_activity_analysis":{},
+  "text_analysis":{},
+}]
+```
+### Voice analysis endpoint `/internal/voice-analysis`
+## Add/Update new voice analysis
+* **Method**: PUT
 * **URL** `/internal/voice-analysis/create`
 * **Description** Add voice analysis data from specified history ID.
 *  **Example body** 
 ```JSON
 {
-  "history_id": HISTORY_UUID, 
-  // insert data
+  "history_id": "HISTORY_UUID", 
   "total_duration": 120.5,
   "total_speech_duration": 85.2,
   "total_pause_duration": 35.3,
@@ -119,7 +162,6 @@ To be updated
       "end_time": 10.2,
       "duration": 9.7
     }
-    // Additional segments...
   ],
   "pause_segments": [
     {
@@ -127,7 +169,10 @@ To be updated
       "end_time": 15.5,
       "duration": 5.3
     }
-    // Additional segments...
   ]
 }
+```
+* **Example message (If success)**
+```
+Successfully update history 1f020e78-1f1b-965c-b476-a31ae153b469 with voice activity analysis 06b7e111-0cb9-46cf-97f1-ac7c6bb4f70e
 ```

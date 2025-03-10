@@ -21,18 +21,19 @@ func GetRoutes(db *gorm.DB, openAIClient *openai.Client) func(r chi.Router) {
 		})
 		r.Route("/api", func(r chi.Router) {
 			r.Route("/users", func(r chi.Router) {
-				r.Get("/{id}", userHandler.GetUser) // user/get?id=1
+				r.Get("/get", userHandler.GetUser)
 				r.Post("/create", userHandler.CreateUser)
-				r.Post("/update", userHandler.UpdateUser)
-				r.Post("/delete", userHandler.DeleteUser)
+				r.Put("/update", userHandler.UpdateUser)
+				r.Put("/delete", userHandler.DeleteUser)
 			})
 			
 			r.Route("/history", func(r chi.Router) {
 				r.Post("/create", historyHandler.CreateHistory)
+				r.Get("/get", historyHandler.GetUserHistories)
 			})
 		})
 		r.Route("/internal", func(r chi.Router) {
-			r.Get("/voice-analysis/create", voiceAnalysisHandler.CreateRecordFromHistoryID)
+			r.Put("/voice-analysis/create", voiceAnalysisHandler.CreateRecordFromHistoryID)
 		})
 		
 	}

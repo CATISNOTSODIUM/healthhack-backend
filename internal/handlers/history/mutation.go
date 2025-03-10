@@ -36,7 +36,10 @@ func (h *HistoryHandler) CreateHistory(w http.ResponseWriter, r *http.Request) {
         return 
 	}
 
+	response := models.History {
+		ID: newHistory.ID,
+	}
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(newHistory)
+	json.NewEncoder(w).Encode(response)
 }
 
