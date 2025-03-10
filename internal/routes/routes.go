@@ -11,10 +11,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetRoutes(db *gorm.DB, openAIClient *openai.Client) func(r chi.Router) {
-	voiceAnalysisHandler := voiceAnalysis.NewVoiceAnalysisHandler(db)
-	userHandler := user.NewUserHandler(db)
-	historyHandler := history.NewHistoryHandler(db)
+type Config struct {
+	DB *gorm.DB
+	OpenAIClient *openai.Client
+}
+
+func GetRoutes(config Config) func(r chi.Router) {
+	voiceAnalysisHandler := voiceAnalysis.NewVoiceAnalysisHandler(config.DB)
+	userHandler := user.NewUserHandler(config.DB)
+	historyHandler := history.NewHistoryHandler(config.DB)
 	return func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("welcome to the server"))
