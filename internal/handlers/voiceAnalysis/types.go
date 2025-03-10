@@ -15,13 +15,13 @@ func NewVoiceAnalysisHandler(db *gorm.DB) *VoiceAnalysisHandler {
 
 type VoiceActivityAnalysisRequest struct {
 	HistoryID uuid.UUID `json:"history_id" validate:"required"`
-	Duration float32 `json:"duration"`
+	Duration float32 `json:"total_duration"`
 	TotalSpeechDuration float32 `json:"total_speech_duration"`
-	TotalPausesDuration float32 `json:"total_pauses_duration"`
+	TotalPausesDuration float32 `json:"total_pause_duration"`
 	NumSpeechSegments uint `json:"num_speech_segments"`
 	NumPauses uint `json:"num_pauses"`
 	AnswerDelayDuration float32 `json:"answer_delay_duration"`
-	Pauses []PausesRequest `json:"pauses"`
+	Pauses []PausesRequest `json:"pause_segments"`
 	SpeechSegments []SpeechSegmentsRequest `json:"speech_segments"`
 }
 

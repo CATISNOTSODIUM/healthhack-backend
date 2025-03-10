@@ -17,6 +17,12 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
         return 
 	}
-	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(user)
+	returnResponse := models.User{
+		ID: user.ID,
+		Username: user.Username,
+		Age: user.Age,
+		MedicalRecord: user.MedicalRecord,
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(returnResponse)
 }

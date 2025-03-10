@@ -15,6 +15,8 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	type Request struct {
 		Username string `json:"username" validate:"required"`
 		GoogleID string `json:"google_id" validate:"required"`
+		Age uint `json:"age"`
+		MedicalRecord string `json:"medical_record"`
 	}
 
 	request := &Request{}
@@ -31,15 +33,16 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	newUser := models.User {
 		Username: request.Username,
 		GoogleID: request.GoogleID,
+		
 	}
 	
 	result := h.db.Clauses(clause.Returning{}).Create(&newUser)
 	if result.Error != nil {
-		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
         return 
 	}
 
-	w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(newUser)
 }
 
@@ -71,11 +74,11 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	
 	result := h.db.Clauses(clause.Returning{}).Save(&newUser)
 	if result.Error != nil {
-		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
         return 
 	}
 
-	w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(newUser)
 }
 
@@ -98,10 +101,10 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	
 	result := h.db.Delete(&models.User{}, request.ID)
 	if result.Error != nil {
-		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
         return 
 	}
 
-	w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf("Successfully delete user id:%d", request.ID)))
 }
