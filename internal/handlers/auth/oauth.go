@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
+	"github.com/CATISNOTSODIUM/healthhack-backend/internal/middleware"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -40,10 +40,6 @@ func getConfig() *oauth2.Config {
 	}
 }
 
-type Claims struct {
-	UserID uuid.UUID
-	jwt.RegisteredClaims
-}
 
 
 func (h *AuthHandler) GoogleLogin(w http.ResponseWriter, r *http.Request) {
@@ -54,33 +50,44 @@ func (h *AuthHandler) GoogleLogin(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
-		http.Error(w, "Error: code is missing.", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "code is missing",
+		})
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	token, err := getConfig().Exchange(context.Background(), code)
 	if err != nil {
-		http.Error(w, "Error: Failed to exchange token", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed exchange token",
+		})
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	client := getConfig().Client(context.Background(), token)
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 	if err != nil {
-		http.Error(w, "Error: Failed to get user information", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to get user information",
+		})
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	defer resp.Body.Close()
 
-	// TODO change error to proper json
 	var userInfo struct {
 		Name string `json:"name"`
 		Sub  string `json:"sub"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
-		http.Error(w, "Error: Failed to parse user information", http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to parse user information",
+		})
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -91,11 +98,17 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 			Username:  userInfo.Name,
 			CreatedAt: time.Now(),
 		}).Error; err != nil {
-			http.Error(w, "Error: Failed to create user", http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "Failed to create user",
+			})
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		if err := h.db.Where("google_id = ?", userInfo.Sub).First(&user).Error; err != nil {
-			http.Error(w, "Error: Failed to fetch created user", http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to fetch created user",
+			})
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
@@ -103,11 +116,14 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	jwtSecret := viper.GetString("JWT_SECRET")
 	if jwtSecret == "" {
 		log.Fatalln("JWT_SECRET is not specified.")
-		http.Error(w, "Error: JWT_SECRET is not specified.", http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "JWT_SECRET is not specified.",
+		})
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	accessTokenClaims := Claims{
+	accessTokenClaims := middleware.Claims{
 		UserID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
@@ -115,11 +131,14 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims).SignedString([]byte(jwtSecret))
 	if err != nil {
-		http.Error(w, "Error: Failed to generate access token.", http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to generate access token.",
+		})
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	refreshTokenClaims := Claims{
+	refreshTokenClaims := middleware.Claims{
 		UserID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
@@ -128,7 +147,11 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims).SignedString([]byte(jwtSecret))
 	if err != nil {
-		http.Error(w, "Error: Failed to generate refresh token.", http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to generate refresh token.",
+		})
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
