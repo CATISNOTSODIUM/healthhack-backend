@@ -25,17 +25,21 @@ func main() {
 		portNumber = "8080"
 	}
 	
+	// OpenAIToken is not necessary at this stage
 	openAIToken, ok := viper.Get("OPENAI_TOKEN").(string)
+	var openAIClient * openai.Client
 	if (!ok) {
-		log.Fatalf("OPENAI_TOKEN not specified")
+		log.Println("OPENAI_TOKEN not specified")
+		openAIClient = nil
+	} else {
+		openAIClient = openai.NewClient(openAIToken)
 	}
 
 	// Init instances
 	db := databases.InitDB()
-	openAIClient := openai.NewClient(openAIToken)
 	// Init router
 	r := chi.NewRouter()
-	r.Group(routes.GetRoutes(db, openAIClient))
+	r.Group(routes.GetRoutes(routes.Config{DB: db, OpenAIClient: openAIClient}))
 	
 	log.Println("Listening on port " + portNumber)
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%s", portNumber), r))
