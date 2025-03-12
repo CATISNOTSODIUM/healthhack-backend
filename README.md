@@ -78,29 +78,6 @@ To stop the container, execute `docker stop <id>` or `docker stop healthhack-bac
 This project used Google Cloud Platform (GCP) for deployment. Please follow the instruction from this [link](https://medium.com/novai-cloud-computing/gcp-docker-golang-deploying-a-go-application-to-google-cloud-container-registry-and-cloud-run-b5056324b5d0) for more details.  
 
 # API Guide
-
-- [Healthhack-backend](#healthhack-backend)
-  - [1. About this project](#1-about-this-project)
-    - [Roadmap](#roadmap)
-  - [2. Set up](#2-set-up)
-    - [Build and running app locally](#build-and-running-app-locally)
-    - [Running with docker](#running-with-docker)
-    - [Deployment](#deployment)
-- [API Guide](#api-guide)
-  - [HTTP codes](#http-codes)
-  - [Headers](#headers)
-  - [Endpoints](#endpoints)
-    - [User endpoints `/api/users`](#user-endpoints-apiusers)
-      - [Get user](#get-user)
-      - [Create user](#create-user)
-      - [Update user](#update-user)
-      - [Delete user](#delete-user)
-    - [History endpoint `/api/history`](#history-endpoint-apihistory)
-      - [Create empty history](#create-empty-history)
-      - [Retrieve latest histories from userID (Including analyzed data)](#retrieve-latest-histories-from-userid-including-analyzed-data)
-    - [Voice analysis endpoint `/internal/voice-analysis`](#voice-analysis-endpoint-internalvoice-analysis)
-  - [Add/Update new voice analysis](#addupdate-new-voice-analysis)
-
 This document provides detailed information about the available API endpoints, including request methods, parameters, responses, and error codes.
 
 At this stage, **I have not set up any forms of authentication** (since I'm quite busy lately). Hence, this documentation is subjected to change.
