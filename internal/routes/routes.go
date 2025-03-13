@@ -40,6 +40,8 @@ func GetRoutes(config Config) func(r chi.Router) {
 			r.Route("/history", func(r chi.Router) {
 				r.Post("/create", historyHandler.CreateHistory)
 				r.Get("/get", historyHandler.GetUserHistories)
+				r.Get("/get-latest", historyHandler.GetLatestHistory)
+				r.Get("/get-by-id", historyHandler.GetUserHistoryByID)
 				r.Post("/create-text-analysis", textAnalysisHandler.CreateTextRecord)
 			})
 		})

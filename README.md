@@ -16,6 +16,8 @@
       - [Delete user](#delete-user)
     - [History endpoint `/api/history`](#history-endpoint-apihistory)
       - [Create empty history](#create-empty-history)
+      - [Retrieve history by ID](#retrieve-history-by-id)
+      - [Retrieve latest history (Including analyzed data)](#retrieve-latest-history-including-analyzed-data)
       - [Retrieve all histories (Including analyzed data)](#retrieve-all-histories-including-analyzed-data)
       - [Text analysis endpoint `/api/history/create-text-analysis`](#text-analysis-endpoint-apihistorycreate-text-analysis)
     - [Voice analysis endpoint `/internal/voice-analysis`](#voice-analysis-endpoint-internalvoice-analysis)
@@ -145,27 +147,47 @@ User XXX not founded
 "Successfully delete user id: USER_ID"
 ```
 ### History endpoint `/api/history`
+Here is a general workflow on how to work with history endpoint.
+![alt text](figure/workflow-history.png)
 #### Create empty history
 **Add new voice analysis**
 * **Method**: POST
 * **URL** `/api/history/create`
 * **Description** Create new empty history.
-*  **Example body** 
-```json
-{
-  "user_id": "USER_UUID"
-}
-```
 *  **Example response** The newly created history UUID.
 ```json
 {
   "id": "HISTORY_UUID"
 }
 ```
+#### Retrieve history by ID
+* **Method**: GET
+* **URL** `/api/history/get-by-id?id=HISTORY_ID`
+* **Example request** `api/history/get-by-id?id=a12-34`
+* **Example response (some fields are truncated)**
+```json
+{
+  "id":"1f020d38-6f1b-465c-b476-a31ae153b469",
+  "user_id":"45d7c3cc-2a10-4de8-bb3d-ec8be81164e3",
+  "voice_activity_analysis":{},
+  "text_analysis":{},
+}
+```
+#### Retrieve latest history (Including analyzed data)
+* **Method**: GET
+* **URL** `/api/history/get`
+* **Example response (some fields are truncated)**
+```json
+{
+  "id":"1f020d38-6f1b-465c-b476-a31ae153b469",
+  "user_id":"45d7c3cc-2a10-4de8-bb3d-ec8be81164e3",
+  "voice_activity_analysis":{},
+  "text_analysis":{},
+}
+```
 #### Retrieve all histories (Including analyzed data)
 * **Method**: GET
 * **URL** `/api/history/get`
-* **URL parameters** `number_of_histories`
 * **Example request** `/api/history/get` get all histories
 * **Example response (some fields are truncated)**
 ```json

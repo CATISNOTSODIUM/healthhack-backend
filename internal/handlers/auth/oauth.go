@@ -171,6 +171,7 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	redirectURL := viper.GetString("FRONTEND_REDIRECT_URL")
+
 	json.NewEncoder(w).Encode(returnToken)
 	http.Redirect(w, r, redirectURL, http.StatusFound)
 }
