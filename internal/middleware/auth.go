@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -16,6 +17,13 @@ type Claims struct {
 	UserID uuid.UUID
 	jwt.RegisteredClaims
 }
+
+type ContextKey string
+
+func (c ContextKey) String() string {
+    return string(c)
+}
+
 
 // TODO: add /refresh to add refresh token
 func AuthMiddleware(db *gorm.DB) func(next http.Handler) http.Handler {
@@ -62,7 +70,9 @@ func AuthMiddleware(db *gorm.DB) func(next http.Handler) http.Handler {
 				})
 				return
 			}
-			next.ServeHTTP(w, r)
+			// set user id context
+			ctx := context.WithValue(r.Context(), ContextKey("user_id"), user.ID)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
