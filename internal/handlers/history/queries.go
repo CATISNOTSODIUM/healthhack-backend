@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
-
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/middleware"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"github.com/google/uuid"
@@ -23,16 +21,9 @@ func (h *HistoryHandler) GetUserHistories(w http.ResponseWriter, r *http.Request
 		return 
 	}
 
-	NumberOfHistories, err := strconv.Atoi(r.URL.Query().Get("number_of_histories"))
-    if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Error: number_of_histories should be unsigned integer"))
-		return 
-    }
-
 	// get latest histories
 	var retrievedHistories []models.History
-	result := h.db.Where(&models.History{UserID: userID}).Limit(NumberOfHistories).Find(&retrievedHistories)
+	result := h.db.Where(&models.History{UserID: userID}).Find(&retrievedHistories)
 	if result.Error != nil {
 		if (errors.Is(result.Error, gorm.ErrRecordNotFound)) {
 			http.Error(w, result.Error.Error(), http.StatusBadRequest)

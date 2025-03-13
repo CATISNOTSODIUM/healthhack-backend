@@ -46,7 +46,6 @@ func (h *TextAnalysisHandler) CreateTextRecord(w http.ResponseWriter, r *http.Re
 
 	json.NewEncoder(w).Encode(map[string]string{
 		"response": textSummary,
-		"error": result.Error.Error(),
 	})
 
 	w.WriteHeader(http.StatusInternalServerError)

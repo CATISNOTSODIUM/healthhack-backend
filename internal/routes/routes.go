@@ -5,6 +5,7 @@ import (
 
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/handlers/auth"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/handlers/history"
+	"github.com/CATISNOTSODIUM/healthhack-backend/internal/handlers/textAnalysis"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/handlers/user"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/handlers/voiceAnalysis"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/middleware"
@@ -23,7 +24,8 @@ func GetRoutes(config Config) func(r chi.Router) {
 	userHandler := user.NewUserHandler(config.DB)
 	historyHandler := history.NewHistoryHandler(config.DB)
 	authHandler := auth.NewAuthHandler(config.DB)
-
+	textAnalysisHandler := textAnalysis.NewTextAnalysisHandler(config.DB, config.OpenAIClient)
+	
 	return func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("welcome to the server"))
@@ -32,13 +34,13 @@ func GetRoutes(config Config) func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(config.DB))
 			r.Route("/users", func(r chi.Router) {
 				r.Get("/get", userHandler.GetUser)
-				r.Post("/create", userHandler.CreateUser)
 				r.Put("/update", userHandler.UpdateUser)
 				r.Put("/delete", userHandler.DeleteUser)
 			})
 			r.Route("/history", func(r chi.Router) {
 				r.Post("/create", historyHandler.CreateHistory)
 				r.Get("/get", historyHandler.GetUserHistories)
+				r.Post("/create-text-analysis", textAnalysisHandler.CreateTextRecord)
 			})
 		})
 		r.Route("/api/auth/google", func(r chi.Router) {

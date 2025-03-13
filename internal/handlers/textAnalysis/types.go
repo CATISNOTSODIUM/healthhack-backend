@@ -10,6 +10,6 @@ type TextAnalysisHandler struct {
 	openai *openai.Client
 }
 
-func NewTextAnalysisHandler(db *gorm.DB) *TextAnalysisHandler {
-	return &TextAnalysisHandler{db: db}
+func NewTextAnalysisHandler(db *gorm.DB, openai *openai.Client) *TextAnalysisHandler {
+	return &TextAnalysisHandler{db: db, openai: openai}
 }

@@ -12,12 +12,12 @@
   - [Endpoints](#endpoints)
     - [User endpoints `/api/users`](#user-endpoints-apiusers)
       - [Get user](#get-user)
-      - [Create user](#create-user)
       - [Update user](#update-user)
       - [Delete user](#delete-user)
     - [History endpoint `/api/history`](#history-endpoint-apihistory)
       - [Create empty history](#create-empty-history)
-      - [Retrieve latest histories from userID (Including analyzed data)](#retrieve-latest-histories-from-userid-including-analyzed-data)
+      - [Retrieve all histories (Including analyzed data)](#retrieve-all-histories-including-analyzed-data)
+      - [Text analysis endpoint `/api/history/create-text-analysis`](#text-analysis-endpoint-apihistorycreate-text-analysis)
     - [Voice analysis endpoint `/internal/voice-analysis`](#voice-analysis-endpoint-internalvoice-analysis)
   - [Add/Update new voice analysis](#addupdate-new-voice-analysis)
 
@@ -26,7 +26,7 @@
 - [x] Set up database schema
 - [x] User queries, mutation, Google authentication
 - [x] API adding history
-- [ ] API Connect to open ai
+- [x] API Connect to open ai
 ## 2. Set up
 ### Build and running app locally
 Clone the repository and install required repositories:
@@ -55,11 +55,6 @@ To start the server, execute
 ```bash
 docker build --network=host --tag healthhack-backend:latest .
 ```
-To see a list of built containers, you can use the `docker images` command. You would expect to see something like this.
-```
-REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
-healthhack-backend      latest    <id>         i <time>          <size>
-```
 To start the server, execute
 ```bash
 docker run --env-file .env -d --name healthhack-backend -p 8080:8080 healthhack-backend:latest
@@ -78,29 +73,6 @@ To stop the container, execute `docker stop <id>` or `docker stop healthhack-bac
 This project used Google Cloud Platform (GCP) for deployment. Please follow the instruction from this [link](https://medium.com/novai-cloud-computing/gcp-docker-golang-deploying-a-go-application-to-google-cloud-container-registry-and-cloud-run-b5056324b5d0) for more details.  
 
 # API Guide
-
-- [Healthhack-backend](#healthhack-backend)
-  - [1. About this project](#1-about-this-project)
-    - [Roadmap](#roadmap)
-  - [2. Set up](#2-set-up)
-    - [Build and running app locally](#build-and-running-app-locally)
-    - [Running with docker](#running-with-docker)
-    - [Deployment](#deployment)
-- [API Guide](#api-guide)
-  - [HTTP codes](#http-codes)
-  - [Headers](#headers)
-  - [Endpoints](#endpoints)
-    - [User endpoints `/api/users`](#user-endpoints-apiusers)
-      - [Get user](#get-user)
-      - [Create user](#create-user)
-      - [Update user](#update-user)
-      - [Delete user](#delete-user)
-    - [History endpoint `/api/history`](#history-endpoint-apihistory)
-      - [Create empty history](#create-empty-history)
-      - [Retrieve latest histories from userID (Including analyzed data)](#retrieve-latest-histories-from-userid-including-analyzed-data)
-    - [Voice analysis endpoint `/internal/voice-analysis`](#voice-analysis-endpoint-internalvoice-analysis)
-  - [Add/Update new voice analysis](#addupdate-new-voice-analysis)
-
 This document provides detailed information about the available API endpoints, including request methods, parameters, responses, and error codes.
 
 At this stage, **I have not set up any forms of authentication** (since I'm quite busy lately). Hence, this documentation is subjected to change.
@@ -115,6 +87,7 @@ Most of our APIs require Authorization header. In our app, we use JWT Token to v
   "refresh_token": "YOUR_REFRESH_TOKEN"
 }
 ```
+![alt text](figure/auth.png)
 Returning the tokens allows clients to store this information in a place that meets their needs. After the clients obtain the access token, please include them in the `Authorization` header. 
 ```
 Authorization: Bearer YOUR_ACCESS_TOKEN
@@ -125,16 +98,11 @@ Authorization: Bearer YOUR_REFRESH_TOKEN
 ```
 ## Endpoints
 ### User endpoints `/api/users`
+All user CRUD operations are performed based on user id specified in JWT Token.
 #### Get user
 * **Method**: GET
 * **URL** `/api/users/get` 
-* **Description** Get basic information for a user with ID `USER_ID`
-* **Example body**
-```json
-{
-  "user_id": "USER_UUID",
-}
-```
+* **Description** Get basic information for a user based on JWT Token defined in authorization header.
 * **Example Response (If the user is founded)** 
 ```json
 {
@@ -148,36 +116,13 @@ Authorization: Bearer YOUR_REFRESH_TOKEN
 record not found
 User XXX not founded
 ```
-#### Create user
-* **Method**: POST
-* **URL** `/api/users/create` 
-* **Description** Create user from username and google ID.
-* **Example body** Note that **username** and **google_id** fields are required. Other fields are optional.
-```json
-{
-  "username": "username",
-  "google_id": "xxxxxxx",
-  "age": 10,
-  "medical_record": "A single child with personal trauma"
-}
-```
-* **Example Response** 
-```json
-{
-  "id": "USER_UUID",
-  "username": "username",
-  "age": 10,
-  "medical_record": "A single child with personal trauma"
-}
-```
 #### Update user
 * **Method**: PUT
 * **URL** `/api/users/update` 
 * **Description** Update user information based on user id.
-* **Example body** Note that the `id` field is required to specify the target. Any other fields provided in the body will be updated accordingly.
+* **Example body** Any other fields provided in the body will be updated accordingly.
 ```json
 {
-  "id": "USER_UUID",
   "username": "username",
   "age": 10,
   "medical_record": "A single child with personal trauma"
@@ -195,12 +140,6 @@ User XXX not founded
 * **Method**: PUT
 * **URL** `/api/users/delete` 
 * **Description** Delete user information based on user id.
-* **Example body** 
-```json
-{
-  "id": "USER_UUID"
-}
-```
 * **Example Response** 
 ```json
 "Successfully delete user id: USER_ID"
@@ -223,17 +162,11 @@ User XXX not founded
   "id": "HISTORY_UUID"
 }
 ```
-#### Retrieve latest histories from userID (Including analyzed data)
+#### Retrieve all histories (Including analyzed data)
 * **Method**: GET
 * **URL** `/api/history/get`
-* **Description** Retrieve user particular histories. You can specify the number of histories you want to retrieve.
-* **Example body**
-```json
-{
-  "user_id": "USER_UUID",
-  "number_of_histories": 1  
-}
-```
+* **URL parameters** `number_of_histories`
+* **Example request** `/api/history/get` get all histories
 * **Example response (some fields are truncated)**
 ```json
 [{
@@ -242,6 +175,23 @@ User XXX not founded
   "voice_activity_analysis":{},
   "text_analysis":{},
 }]
+```
+#### Text analysis endpoint `/api/history/create-text-analysis`
+* **Method**: POST
+* **URL** `/api/history/create-text-analysis`
+* **Description** Create new text analysis record and save it into the database.
+* **Example body**
+```json
+{
+  "history_id": "HISTORY_UUID",
+  "transcribed_text": "The weather is nice!"
+} 
+```
+* **Example response**
+```json
+{
+    "response": "TEXT ANALYSIS"
+}
 ```
 ### Voice analysis endpoint `/internal/voice-analysis`
 ## Add/Update new voice analysis

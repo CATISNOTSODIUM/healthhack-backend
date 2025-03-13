@@ -167,7 +167,7 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		RefreshToken: refreshToken,
 		AccessToken: accessToken,
 		RefreshTokenMaxAge: 7 * 24 * 60 * 60, // 7 days
-		AccessTokenMaxAge: 15 * 60, // 15 minutes
+		AccessTokenMaxAge: 150 * 60, // 150 minutes
 	}
 
 	redirectURL := viper.GetString("FRONTEND_REDIRECT_URL")
