@@ -175,7 +175,7 @@ Here is a general workflow on how to work with history endpoint.
 ```
 #### Retrieve latest history (Including analyzed data)
 * **Method**: GET
-* **URL** `/api/history/get`
+* **URL** `/api/history/get-latest`
 * **Example response (some fields are truncated)**
 ```json
 {
