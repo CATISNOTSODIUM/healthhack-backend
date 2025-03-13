@@ -2,7 +2,6 @@ package databases
 
 import (
 	"log"
-	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -26,6 +25,7 @@ func InitDB() *gorm.DB {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
 
+	/*
 	if err := db.AutoMigrate(
 		&models.User{},
 		&models.History{},
@@ -36,7 +36,7 @@ func InitDB() *gorm.DB {
 		&models.TextAnalysis{},
 	); err != nil {
 		log.Fatalf("Error migrating database: %v", err)
-	}
+	}*/
 
 	log.Println("Database connected, migrated, and categories added successfully")
 

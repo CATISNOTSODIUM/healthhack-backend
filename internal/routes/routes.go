@@ -28,7 +28,7 @@ func GetRoutes(config Config) func(r chi.Router) {
 	
 	return func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("welcome to the server"))
+			w.Write([]byte("welcome to the server (V2)"))
 		})
 		r.Route("/api", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(config.DB))
@@ -51,7 +51,7 @@ func GetRoutes(config Config) func(r chi.Router) {
 			r.Get("/refresh", authHandler.HandleRefreshToken) 
 		})
 		r.Route("/internal", func(r chi.Router) {
-			r.Put("/voice-analysis/create", voiceAnalysisHandler.CreateRecordFromHistoryID)
+			r.Post("/voice-analysis/create", voiceAnalysisHandler.CreateRecordFromHistoryID)
 		})
 	}
 }

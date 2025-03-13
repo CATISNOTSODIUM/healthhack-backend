@@ -217,7 +217,7 @@ Here is a general workflow on how to work with history endpoint.
 ```
 ### Voice analysis endpoint `/internal/voice-analysis`
 ## Add/Update new voice analysis
-* **Method**: PUT
+* **Method**: POST
 * **URL** `/internal/voice-analysis/create`
 * **Description** Add voice analysis data from specified history ID.
 *  **Example body** 

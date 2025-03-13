@@ -2,29 +2,32 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"log"
+
 	openai "github.com/sashabaranov/go-openai" // unofficial library
 	"github.com/sashabaranov/go-openai/jsonschema"
 )
 
-// This can be improved.
-func ExtractTextFeature(text string, client * openai.Client) (string, error) {
-	type Result struct {
-		Coherence []struct {
-			Score uint `json:"score"`
-			Description string `json:"description"` 
-		} `json:"coherence"`
-		SentenceComplexity []struct {
-			Score uint `json:"score"`
-			Description string `json:"description"`
-		} `json:"sentence_complexity"`
-	}
+type Result struct {
+	Coherence struct {
+		Score uint `json:"score"`
+		Description string `json:"description"` 
+	} `json:"coherence"`
+	SentenceComplexity struct {
+		Score uint `json:"score"`
+		Description string `json:"description"`
+	} `json:"sentence_complexity"`
+}
+
+func ExtractTextFeature(text string, client * openai.Client) (*Result, error) {
+	
 	var result Result
 	schema, err := jsonschema.GenerateSchemaForType(result)
 
 	if err != nil {
 		log.Printf("ChatCompletion error: %v\n", err)
-		return "", err
+		return nil, err
 	}
 
 	resp, err := client.CreateChatCompletion(
@@ -54,8 +57,13 @@ func ExtractTextFeature(text string, client * openai.Client) (string, error) {
 
 	if err != nil {
 		log.Printf("ChatCompletion error: %v\n", err)
-		return "", err
+		return nil, err
 	}
 
-	return resp.Choices[0].Message.Content, nil
+	var returnResult Result
+	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content), &returnResult); err != nil {
+        return nil, err // Means the string was invalid
+    }
+
+	return &returnResult, nil
 }

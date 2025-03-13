@@ -2,11 +2,13 @@ package voiceAnalysis
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"github.com/go-playground/validator/v10"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -41,12 +43,19 @@ func (h *VoiceAnalysisHandler) CreateRecordFromHistoryID(w http.ResponseWriter, 
 		AnswerDelayDuration: request.AnswerDelayDuration,
 	}
 
-	result := h.db.Clauses(clause.Returning{}).Create(&analysis)
-	if result.Error != nil {
-		http.Error(w, result.Error.Error(), http.StatusBadRequest)
-        return 
+	tmp := models.VoiceActivityAnalysis {}
+	if err := h.db.Clauses(clause.Returning{}).Where("history_id = ?", request.HistoryID).First(&tmp).Error; err != nil {
+		if (errors.Is(err, gorm.ErrRecordNotFound)) {
+			h.db.Clauses(clause.Returning{}).Create(&analysis)
+		} 
+	} else {
+		result := h.db.Clauses(clause.Returning{}).Where("history_id = ?", request.HistoryID).Updates(&analysis)
+		if result.Error != nil {
+			http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+			return 
+		}
 	}
-
+	
 	voiceActivityAnalysisID := analysis.ID
 
 	for _, pause := range request.Pauses {
