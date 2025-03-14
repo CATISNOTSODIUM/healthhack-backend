@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/middleware"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/spf13/viper"
 )
 
 func (h *AuthHandler) HandleRefreshToken(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,7 @@ func (h *AuthHandler) HandleRefreshToken(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	tokenString = tokenString[len("Bearer "):]
-	jwtSecret := viper.GetString("JWT_SECRET")
+	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		log.Fatalln("JWT_SECRET is not specified.")
 		w.WriteHeader(http.StatusInternalServerError)

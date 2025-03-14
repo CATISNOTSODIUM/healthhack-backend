@@ -7,7 +7,7 @@ RUN go mod download
 # copy source code
 COPY . .
 # compile application
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server/main.go
 
 EXPOSE 8080
 

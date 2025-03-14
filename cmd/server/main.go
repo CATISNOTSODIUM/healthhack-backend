@@ -4,33 +4,33 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/databases"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/routes"
 	"github.com/go-chi/chi/v5"
 	"github.com/sashabaranov/go-openai"
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	// Read environment variables
-	viper.SetConfigFile(".env")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalf("Error while reading config file %s", err);
-	}
-	portNumber, ok := viper.Get("PORT").(string)
-	if (!ok) {
+	err := godotenv.Load()
+    if err != nil {
+        log.Fatalf("err loading: %v", err)
+    }
+
+	portNumber := os.Getenv("PORT")
+	if (portNumber == "") {
 		log.Println("PORT number not specified. Set to default value 8080.")
 		portNumber = "8080"
 	}
 	
 	// OpenAIToken is not necessary at this stage
-	openAIToken, ok := viper.Get("OPENAI_TOKEN").(string)
+	openAIToken := os.Getenv("OPENAI_TOKEN")
 	var openAIClient * openai.Client
-	if (!ok) {
+	if (openAIToken == "") {
 		log.Println("OPENAI_TOKEN not specified")
-		openAIClient = nil
 	} else {
 		openAIClient = openai.NewClient(openAIToken)
 	}
