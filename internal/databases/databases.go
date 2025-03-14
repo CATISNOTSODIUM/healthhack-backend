@@ -2,16 +2,16 @@ package databases
 
 import (
 	"log"
-	"github.com/spf13/viper"
+	"os"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 func InitDB() *gorm.DB {
-	dsn, ok := viper.Get("DSN").(string)
+	dsn := os.Getenv("DSN")
 
-	if (!ok) {
+	if (dsn == "") {
 		log.Fatalf("DSN is not set in the environment variables")
 	}
 

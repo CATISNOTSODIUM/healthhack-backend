@@ -6,26 +6,26 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/middleware"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
 
 func getConfig() *oauth2.Config {
-	clientID := viper.GetString("GOOGLE_CLIENT_ID")
+	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 	if clientID == "" {
 		log.Fatalln("GOOGLE_CLIENT_ID is not specified.")
 	}
-	clientSecret := viper.GetString("GOOGLE_CLIENT_SECRET")
+	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
 	if clientSecret == "" {
 		log.Fatalln("GOOGLE_CLIENT_SECRET is not specified.")
 	}
-	redirectURL := viper.GetString("GOOGLE_REDIRECT_URL")
+	redirectURL := os.Getenv("GOOGLE_REDIRECT_URL")
 	if redirectURL == "" {
 		log.Fatalln("GOOGLE_REDIRECT_URL is not specified.")
 	}
@@ -114,7 +114,7 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	jwtSecret := viper.GetString("JWT_SECRET")
+	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		log.Fatalln("JWT_SECRET is not specified.")
 		json.NewEncoder(w).Encode(map[string]string{
@@ -164,11 +164,11 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		AccessTokenMaxAge int `json:"access_token_max_age"`
 	}
 
-	redirectURL := viper.GetString("FRONTEND_REDIRECT_URL")
+	redirectURL := os.Getenv("FRONTEND_REDIRECT_URL")
 	returnParams := url.Values{
 		"refresh_token": {refreshToken},
 		"access_token": {accessToken},
 	}
-	redirectURL = redirectURL + returnParams.Encode()
+	redirectURL = redirectURL + "?" + returnParams.Encode()
 	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }
