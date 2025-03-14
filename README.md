@@ -12,12 +12,14 @@
   - [Endpoints](#endpoints)
     - [User endpoints `/api/users`](#user-endpoints-apiusers)
       - [Get user](#get-user)
-      - [Create user](#create-user)
       - [Update user](#update-user)
       - [Delete user](#delete-user)
     - [History endpoint `/api/history`](#history-endpoint-apihistory)
       - [Create empty history](#create-empty-history)
-      - [Retrieve latest histories from userID (Including analyzed data)](#retrieve-latest-histories-from-userid-including-analyzed-data)
+      - [Retrieve history by ID](#retrieve-history-by-id)
+      - [Retrieve latest history (Including analyzed data)](#retrieve-latest-history-including-analyzed-data)
+      - [Retrieve all histories (Including analyzed data)](#retrieve-all-histories-including-analyzed-data)
+      - [Text analysis endpoint `/api/history/create-text-analysis`](#text-analysis-endpoint-apihistorycreate-text-analysis)
     - [Voice analysis endpoint `/internal/voice-analysis`](#voice-analysis-endpoint-internalvoice-analysis)
   - [Add/Update new voice analysis](#addupdate-new-voice-analysis)
 
@@ -26,7 +28,7 @@
 - [x] Set up database schema
 - [x] User queries, mutation, Google authentication
 - [x] API adding history
-- [ ] API Connect to open ai
+- [x] API Connect to open ai
 ## 2. Set up
 ### Build and running app locally
 Clone the repository and install required repositories:
@@ -55,11 +57,6 @@ To start the server, execute
 ```bash
 docker build --network=host --tag healthhack-backend:latest .
 ```
-To see a list of built containers, you can use the `docker images` command. You would expect to see something like this.
-```
-REPOSITORY       TAG       IMAGE ID       CREATED         SIZE
-healthhack-backend      latest    <id>         i <time>          <size>
-```
 To start the server, execute
 ```bash
 docker run --env-file .env -d --name healthhack-backend -p 8080:8080 healthhack-backend:latest
@@ -85,13 +82,8 @@ At this stage, **I have not set up any forms of authentication** (since I'm quit
 * **StatusBadRequest (400)** The request was malformed. The request does not follow the schema guidelined by this documentation.
 * **StatusInternalServerError (500)** The request is unsuccessfully processed due to internal server error.
 ## Headers
-Most of our APIs require Authorization header. In our app, we use JWT Token to verify the users. Users have to log in through `/api/auth/google` in order to get the tokens. Here is the sample response after callback.
-```json
-{
-  "access_token": "YOUR_ACCESS_TOKEN",
-  "refresh_token": "YOUR_REFRESH_TOKEN"
-}
-```
+Most of our APIs require Authorization header. In our app, we use JWT Token to verify the users. Users have to log in through `/api/auth/google` in order to get the tokens. **`access_token` and `refresh_token` will be provided as url params**.
+![alt text](figure/auth.png)
 Returning the tokens allows clients to store this information in a place that meets their needs. After the clients obtain the access token, please include them in the `Authorization` header. 
 ```
 Authorization: Bearer YOUR_ACCESS_TOKEN
@@ -102,16 +94,11 @@ Authorization: Bearer YOUR_REFRESH_TOKEN
 ```
 ## Endpoints
 ### User endpoints `/api/users`
+All user CRUD operations are performed based on user id specified in JWT Token.
 #### Get user
 * **Method**: GET
 * **URL** `/api/users/get` 
-* **Description** Get basic information for a user with ID `USER_ID`
-* **Example body**
-```json
-{
-  "user_id": "USER_UUID",
-}
-```
+* **Description** Get basic information for a user based on JWT Token defined in authorization header.
 * **Example Response (If the user is founded)** 
 ```json
 {
@@ -125,36 +112,13 @@ Authorization: Bearer YOUR_REFRESH_TOKEN
 record not found
 User XXX not founded
 ```
-#### Create user
-* **Method**: POST
-* **URL** `/api/users/create` 
-* **Description** Create user from username and google ID.
-* **Example body** Note that **username** and **google_id** fields are required. Other fields are optional.
-```json
-{
-  "username": "username",
-  "google_id": "xxxxxxx",
-  "age": 10,
-  "medical_record": "A single child with personal trauma"
-}
-```
-* **Example Response** 
-```json
-{
-  "id": "USER_UUID",
-  "username": "username",
-  "age": 10,
-  "medical_record": "A single child with personal trauma"
-}
-```
 #### Update user
 * **Method**: PUT
 * **URL** `/api/users/update` 
 * **Description** Update user information based on user id.
-* **Example body** Note that the `id` field is required to specify the target. Any other fields provided in the body will be updated accordingly.
+* **Example body** Any other fields provided in the body will be updated accordingly.
 ```json
 {
-  "id": "USER_UUID",
   "username": "username",
   "age": 10,
   "medical_record": "A single child with personal trauma"
@@ -172,57 +136,93 @@ User XXX not founded
 * **Method**: PUT
 * **URL** `/api/users/delete` 
 * **Description** Delete user information based on user id.
-* **Example body** 
-```json
-{
-  "id": "USER_UUID"
-}
-```
 * **Example Response** 
 ```json
 "Successfully delete user id: USER_ID"
 ```
 ### History endpoint `/api/history`
+Here is a general workflow on how to work with history endpoint.
+![alt text](figure/workflow-history.png)
 #### Create empty history
 **Add new voice analysis**
 * **Method**: POST
 * **URL** `/api/history/create`
 * **Description** Create new empty history.
-*  **Example body** 
-```json
-{
-  "user_id": "USER_UUID"
-}
-```
 *  **Example response** The newly created history UUID.
 ```json
 {
   "id": "HISTORY_UUID"
 }
 ```
-#### Retrieve latest histories from userID (Including analyzed data)
+#### Retrieve history by ID
 * **Method**: GET
-* **URL** `/api/history/get`
-* **Description** Retrieve user particular histories. You can specify the number of histories you want to retrieve.
-* **Example body**
+* **URL** `/api/history/get-by-id?id=HISTORY_ID`
+* **Example request** `api/history/get-by-id?id=a12-34`
+* **Example response (some fields are truncated)**
 ```json
 {
-  "user_id": "USER_UUID",
-  "number_of_histories": 1  
+  "id":"1f020d38-6f1b-465c-b476-a31ae153b469",
+  "user_id":"45d7c3cc-2a10-4de8-bb3d-ec8be81164e3",
+  "voice_activity_analysis":{},
+  "text_analysis":{},
 }
 ```
+#### Retrieve latest history (Including analyzed data)
+* **Method**: GET
+* **URL** `/api/history/get-latest`
+* **Example response (some fields are truncated)**
+```json
+{
+  "id":"1f020d38-6f1b-465c-b476-a31ae153b469",
+  "user_id":"45d7c3cc-2a10-4de8-bb3d-ec8be81164e3",
+  "voice_activity_analysis":{},
+  "text_analysis":{},
+}
+```
+#### Retrieve all histories (Including analyzed data)
+* **Method**: GET
+* **URL** `/api/history/get`
+* **Example request** `/api/history/get` get all histories
 * **Example response (some fields are truncated)**
 ```json
 [{
   "id":"1f020d38-6f1b-465c-b476-a31ae153b469",
   "user_id":"45d7c3cc-2a10-4de8-bb3d-ec8be81164e3",
-  "voice_activity_analysis":{},
-  "text_analysis":{},
+  "voice_activity_analysis":{
+    "id":"faa5c124-a420-4563-9088-001d60b2aa17",
+    "history_id":"72b94a0a-3a59-4e61-81ce-770c264f9953",
+    "duration":472.916,
+    "total_speech_duration":3,
+    "total_pauses_duration":3,
+    "num_speech_segments":0,
+    "num_pauses":0,
+    "answer_delay_duration":0,
+    "pauses":null,
+    "speech_segments":null
+  },
+  "text_analysis":{
+    "id":"58d06b5e-9fcb-409f-8379-d4062d292ff8",
+    "history_id":"72b94a0a-3a59-4e61-81ce-770c264f9953",
+    "coherence_score":6,
+    "coherence_description":"The sentence clearly expresses an opinion about the weather, making it easy to understand. However, it lacks elaboration or context, which could enhance clarity.","sentence_complexity_score":2,
+    "sentence_complexity_description":"The sentence is a simple structure, consisting of a subject and a predicate. It does not contain any compound or complex elements, which limits its sophistication."
+    }
 }]
+```
+#### Text analysis endpoint `/api/history/create-text-analysis`
+* **Method**: POST
+* **URL** `/api/history/create-text-analysis`
+* **Description** Create new text analysis record and save it into the database.
+* **Example body**
+```json
+{
+  "history_id": "HISTORY_UUID",
+  "transcribed_text": "The weather is nice!"
+} 
 ```
 ### Voice analysis endpoint `/internal/voice-analysis`
 ## Add/Update new voice analysis
-* **Method**: PUT
+* **Method**: POST
 * **URL** `/internal/voice-analysis/create`
 * **Description** Add voice analysis data from specified history ID.
 *  **Example body** 
