@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
@@ -37,7 +37,7 @@ func AuthMiddleware(db *gorm.DB) func(next http.Handler) http.Handler {
 				return
 			}
 			tokenString = tokenString[len("Bearer "):]
-			jwtSecret := viper.GetString("JWT_SECRET")
+			jwtSecret := os.Getenv("JWT_SECRET")
 			if jwtSecret == "" {
 				log.Fatalln("JWT_SECRET is not specified.")
 				w.WriteHeader(http.StatusInternalServerError)

@@ -7,11 +7,10 @@ import (
 	"strings"
 
 	"github.com/go-chi/cors"
-	"github.com/spf13/viper"
 )
 
 func CorsMiddleware() func(next http.Handler) http.Handler {
-	allowedOriginsEnv := viper.GetString("ALLOWED_ORIGINS")
+	allowedOriginsEnv := os.Getenv("ALLOWED_ORIGINS")
 	if allowedOriginsEnv == "" {
 		log.Println("Warning: ALLOWED_ORIGINS not set, using default '*'")
 		allowedOriginsEnv = "*"
