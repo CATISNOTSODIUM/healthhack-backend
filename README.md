@@ -82,13 +82,7 @@ At this stage, **I have not set up any forms of authentication** (since I'm quit
 * **StatusBadRequest (400)** The request was malformed. The request does not follow the schema guidelined by this documentation.
 * **StatusInternalServerError (500)** The request is unsuccessfully processed due to internal server error.
 ## Headers
-Most of our APIs require Authorization header. In our app, we use JWT Token to verify the users. Users have to log in through `/api/auth/google` in order to get the tokens. Here is the sample response after callback.
-```json
-{
-  "access_token": "YOUR_ACCESS_TOKEN",
-  "refresh_token": "YOUR_REFRESH_TOKEN"
-}
-```
+Most of our APIs require Authorization header. In our app, we use JWT Token to verify the users. Users have to log in through `/api/auth/google` in order to get the tokens. **`access_token` and `refresh_token` will be provided as url params**.
 ![alt text](figure/auth.png)
 Returning the tokens allows clients to store this information in a place that meets their needs. After the clients obtain the access token, please include them in the `Authorization` header. 
 ```
@@ -194,8 +188,25 @@ Here is a general workflow on how to work with history endpoint.
 [{
   "id":"1f020d38-6f1b-465c-b476-a31ae153b469",
   "user_id":"45d7c3cc-2a10-4de8-bb3d-ec8be81164e3",
-  "voice_activity_analysis":{},
-  "text_analysis":{},
+  "voice_activity_analysis":{
+    "id":"faa5c124-a420-4563-9088-001d60b2aa17",
+    "history_id":"72b94a0a-3a59-4e61-81ce-770c264f9953",
+    "duration":472.916,
+    "total_speech_duration":3,
+    "total_pauses_duration":3,
+    "num_speech_segments":0,
+    "num_pauses":0,
+    "answer_delay_duration":0,
+    "pauses":null,
+    "speech_segments":null
+  },
+  "text_analysis":{
+    "id":"58d06b5e-9fcb-409f-8379-d4062d292ff8",
+    "history_id":"72b94a0a-3a59-4e61-81ce-770c264f9953",
+    "coherence_score":6,
+    "coherence_description":"The sentence clearly expresses an opinion about the weather, making it easy to understand. However, it lacks elaboration or context, which could enhance clarity.","sentence_complexity_score":2,
+    "sentence_complexity_description":"The sentence is a simple structure, consisting of a subject and a predicate. It does not contain any compound or complex elements, which limits its sophistication."
+    }
 }]
 ```
 #### Text analysis endpoint `/api/history/create-text-analysis`
@@ -208,12 +219,6 @@ Here is a general workflow on how to work with history endpoint.
   "history_id": "HISTORY_UUID",
   "transcribed_text": "The weather is nice!"
 } 
-```
-* **Example response**
-```json
-{
-    "response": "TEXT ANALYSIS"
-}
 ```
 ### Voice analysis endpoint `/internal/voice-analysis`
 ## Add/Update new voice analysis

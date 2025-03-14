@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
-	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"github.com/CATISNOTSODIUM/healthhack-backend/internal/middleware"
+	"github.com/CATISNOTSODIUM/healthhack-backend/internal/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
@@ -163,15 +164,11 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		AccessTokenMaxAge int `json:"access_token_max_age"`
 	}
 
-	returnToken := ReturnToken {
-		RefreshToken: refreshToken,
-		AccessToken: accessToken,
-		RefreshTokenMaxAge: 7 * 24 * 60 * 60, // 7 days
-		AccessTokenMaxAge: 150 * 60, // 150 minutes
-	}
-
 	redirectURL := viper.GetString("FRONTEND_REDIRECT_URL")
-
-	json.NewEncoder(w).Encode(returnToken)
-	http.Redirect(w, r, redirectURL, http.StatusFound)
+	returnParams := url.Values{
+		"refresh_token": {refreshToken},
+		"access_token": {accessToken},
+	}
+	redirectURL = redirectURL + returnParams.Encode()
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }
